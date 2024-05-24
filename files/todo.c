@@ -3,8 +3,8 @@
 
 #include "todo.h"
 
-void draw_todos(Todo* todo , int size){
-	int y = 3;
+void draw_todos(Todo* todo , int size , char* color , int pos){
+	int y = 15;
 	move_cursor(5,y);
 	printf("\033[1m+ TODO:\033[0m");
 	y++;
@@ -18,7 +18,7 @@ void draw_todos(Todo* todo , int size){
 	y++;
 	for(int i = 0 ; i < size ; i++){
 		move_cursor(7,y + i);
-		printf("- [%s] %s", is_done(todo->done), todo->str);
+		printf("- [%s] %s%s%s", is_done(todo->done),pos == todo->line_term ? color:"\033[49m", todo->str , "\033[49m");
 		todo++;
 	}
 }

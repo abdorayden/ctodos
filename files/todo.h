@@ -20,5 +20,5 @@ typedef struct{
 #endif
 
 #define is_done(b)	b ? "\033[92mX\033[39m" : " "
-void draw_todos(Todo*, int);
+void draw_todos(Todo*, int , char* , int);
 #endif // TODO_H_
