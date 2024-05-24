@@ -1,4 +1,4 @@
 #!/bin/bash
 
-gcc -o main main.c files/todo.c files/draw.c -lm
+gcc -o main main.c files/todo.c files/draw.c -ggdb -lm
 
