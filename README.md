@@ -1,19 +1,13 @@
 # Todoc
 
-## under dev
+<p align="center">
+  <img src="./img.png" />
+</p>
 
-'''
-./main <filename.{c , py , rs , go , rb , js}>
-'''
-
+```console
+./main <filename>
+```
 + TODO :
     - [ ] ...
     - [X] ...
     - [ ] ...
-
-
-## Keys
-'k' UP,
-'j' DOWN,
-'Enter' done mark
-'q' quit
