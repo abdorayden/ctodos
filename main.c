@@ -8,12 +8,21 @@
 #include <unistd.h>
 
 #include "files/bool.h"
-
 #include "files/todo.h"
 #include "files/draw.h"
 #include "files/clock.h"
+#include "files/rdirectorys.h"
+#include "files/config.h"
 
 typedef struct winsize Size;
+
+void handle_time(char* x , int y){
+	handle_and_print(fmt_time(current_time()) , 40 , 5);
+	move_cursor(25 , 12);
+	puts(fmt_date(current_time()));
+	draw_line(x ,y);
+}
+
 void set_input_mode() {
     struct termios tattr;
     tcgetattr(STDIN_FILENO, &tattr);
@@ -36,22 +45,24 @@ Size get_term_size(){
 	return w;
 }
 
-int count_todos(FILE* file){
+int count_todos(char* filename){
+	FILE* file = fopen(filename , "r");
 	if(file == NULL)	return -1;
 	char word[128];
 	int lines = 0;
 	// TODO: ...
-	while(fscanf(file , "%s" , word) != EOF){
-		if(strcmp(word , "TODO:") == 0){
+	while(fgets(word, 128 ,file ) != NULL){
+		if(strstr(word , "TODO:") != NULL){
 			lines++;
 		}
 	}
+	fclose(file);
 	return lines;
 }
-
-void get_todos(FILE* file , Todo* todo){
-	if(count_todos(file) < 0)	return ;
-	if(todo == NULL)	return; 
+void get_todos(char* filename , Todo* todo){
+	FILE* file = fopen(filename , "r");
+	//if(count_todos(file) < 0)	return ;
+	if(todo == NULL || file == NULL)	return; 
 	char line[50];
 	int i = 0;
 	int lines = 0;
@@ -78,44 +89,57 @@ void get_todos(FILE* file , Todo* todo){
 			i++;
 		}
 	}
+	fclose(file);
+}
+
+void Load_Directory(char* direname , Todo_Files* tf , int* x){
+	D_Files df = Init_Dir();
+	List_Dir(direname , &df);
+	int k = 0;
+	for(int i = 0 ; i <= df.file_idx;  i++ ){
+		int c = count_todos(df.files[i]);
+		if(c > 0){
+			// the filename has todo lines
+			if(k < 10){
+				strcpy(tf[k].filename,df.files[i]);
+				tf[k].count = c;
+				get_todos(df.files[i] , tf[k].todos);
+			}
+			k++;
+		}
+	}
+	*x = k;
 }
 
 int main(int argc , char** argv){
 	if(argc < 2){
-		fprintf(stderr , "%s <filename>" , *argv);
+		fprintf(stderr , "%s <directory>" , *argv);
 		return 1;
 	}
 	int x_cursor= 13;
 	int y_cursor= 9;
-	char* file = *(argv + 1);
+	char* dir = *(argv + 1);
 	Size h = get_term_size();
 	int row_max = h.ws_row;
 	int col_max = h.ws_col;
-	FILE* filep;
-	if((filep = fopen(file , "r")) == NULL){
-		fprintf(stderr , "ERROR : %s" , strerror(errno));
-		return 1;
-	}
-	int count = count_todos(filep);
-	if(count < 1){
-		printf("No TODOS");
-		fclose(filep);
-		return 1;
-	}
-	Todo todos[count];
-	get_todos(filep , todos);
-	clearscreen();
-	handle_and_print(fmt_time(current_time()) , 40 , 5);
-	move_cursor(25 , 12);
-	puts(fmt_date(current_time()));
-	draw_todos(todos ,count , "\033[47m" , y_cursor);
+	
+	Todo_Files df[MAX_TODOS_FILE];
+	int z;
+	Load_Directory(dir , df , &z);
+	int k = 0;
 
+	clearscreen();
+	handle_time("-" ,col_max);
+	draw_todos(df[k].todos , df[k].filename ,df[k].count , "\033[47m" , y_cursor);
+	//draw_todos(todos ,count , "\033[47m" , y_cursor);
+
+	bool quit = false;
     	struct termios saved_tattr;
     	tcgetattr(STDIN_FILENO, &saved_tattr);
 	move_cursor(x_cursor,y_cursor);
 	printf("\033[?25l");
     	set_input_mode();
-    	while (true) {
+    	while (!quit) {
     		int ch = getchar();
 		switch(ch){
 			case 'k':{
@@ -123,44 +147,45 @@ int main(int argc , char** argv){
 					y_cursor--;
 					move_cursor(x_cursor , y_cursor);
 					clearscreen();
-					handle_and_print(fmt_time(current_time()) , 40 , 5);
-					move_cursor(25 , 12);
-					puts(fmt_date(current_time()));
-					draw_todos(todos , count, "\033[47m" , y_cursor);
+					handle_time("-" ,col_max);
+					draw_todos(df[k].todos , df[k].filename ,df[k].count , "\033[47m" , y_cursor);
 				}
 			}break;
 			case 'j':{
-				if(y_cursor < row_max){
+				if(y_cursor < (9 + (df[k].count - 1))){
 					y_cursor++;
 					move_cursor(x_cursor, y_cursor);
 					clearscreen();
-					handle_and_print(fmt_time(current_time()) , 40 , 5);
-					move_cursor(25 , 12);
-					puts(fmt_date(current_time()));
-					draw_todos(todos , count, "\033[47m" , y_cursor);
+					handle_time("-" ,col_max);
+					draw_todos(df[k].todos , df[k].filename ,df[k].count , "\033[47m" , y_cursor);
 				}
 
 			}break;
 			case 10:{
-				for(int i = 0 ; i < count ; i++){
-					if(y_cursor == todos[i].line_term){
-						todos[i].done = true;
+				for(int i = 0 ; i < df[k].count ; i++){
+					if(y_cursor == df[k].todos[i].line_term){
+						df[k].todos[i].done = true;
 						clearscreen();
-						handle_and_print(fmt_time(current_time()) , 40 , 5);
-						move_cursor(25 , 12);
-						puts(fmt_date(current_time()));
-						draw_todos(todos , count, "\033[47m" , y_cursor);
+						handle_time("-" ,col_max);
+						draw_todos(df[k].todos , df[k].filename ,df[k].count , "\033[47m" , y_cursor);
 					}
 				}
 			}break;
-			case 'q':{
-    				tcsetattr(STDIN_FILENO, TCSANOW, &saved_tattr);
-				printf("\033[?25l");
-				fclose(filep);
+			case 9 :{
+				if(k == (z - 1))	k=0;
+				else	k++;
+				move_cursor(x_cursor, y_cursor);
 				clearscreen();
-				exit(0);
+				handle_time("-" ,col_max);
+				draw_todos(df[k].todos , df[k].filename ,df[k].count , "\033[47m" , y_cursor);
+			}break;
+			case 'q':{
+				quit = true;
 			}
 		}
     	}
+    	tcsetattr(STDIN_FILENO, TCSANOW, &saved_tattr);
+	clearscreen();
+	printf("\033[?25h");
 	return 0;
 }
