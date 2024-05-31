@@ -19,6 +19,8 @@ use todoc software that display all todos in your project and your project will 
 ### ENTER : mark "x" as complete
 
 + TODO :
-    - [ ] ...
-    - [X] ...
-    - [ ] ...
+    - [X] Work with folders
+    - [X] add tab keyword to move to other file
+    - [X] we need time
+    - [ ] display filename
+    - [ ] add config file to load and save modifications
