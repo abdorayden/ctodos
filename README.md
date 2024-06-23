@@ -1,7 +1,7 @@
 # Todoc
 
 <p align="center">
-  <img src="./img.png" />
+  <img src="img/img.png" />
 </p>
 
 # you have big project right ?
@@ -22,5 +22,5 @@ use todoc software that display all todos in your project and your project will 
     - [X] Work with folders
     - [X] add tab keyword to move to other file
     - [X] we need time
-    - [ ] display filename
+    - [X] display filename
     - [ ] add config file to load and save modifications

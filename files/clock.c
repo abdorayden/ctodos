@@ -118,16 +118,11 @@ char* fmt_time(char* f){
 }
 
 char* fmt_date(char* f){
-	int idx = 0;
 	int i;
 	for(i = 20 ; f[i] != '\0' ; i++){
 		f[i - 9] = f[i];
 	}
 	f[i - 9] = '\0';
-	//while(*f){
-	//	d[idx++] = *f;
-	//	f++;
-	//}
 	return f;
 }
 void handle_and_print(char* fmt , int x , int y){

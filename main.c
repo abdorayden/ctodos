@@ -72,12 +72,12 @@ void get_todos(char* filename , Todo* todo){
 		++lines;
 		char* cur_place = strstr(line , "TODO:");
 		if(cur_place != NULL){
-			for (int j = 0 ;j < strlen(cur_place) - 5 ; j++ ){
+			for (size_t j = 0 ;j < strlen(cur_place) - 5 ; j++ ){
 				cur_place[j] = cur_place[j + 5];
 			}
-			for(int j = 0 ; j < strlen(cur_place) ; j++){
+			for(size_t j = 0 ; j < strlen(cur_place) ; j++){
 				if(cur_place[j] == '\n'){
-					for(int k = j ; k < strlen(cur_place) ; k++){
+					for(size_t k = j ; k < strlen(cur_place) ; k++){
 						cur_place[k] = 0;
 					}
 				}
@@ -120,7 +120,7 @@ int main(int argc , char** argv){
 	int y_cursor= 9;
 	char* dir = *(argv + 1);
 	Size h = get_term_size();
-	int row_max = h.ws_row;
+	//int row_max = h.ws_row; Maybe i will use it later
 	int col_max = h.ws_col;
 	
 	Todo_Files df[MAX_TODOS_FILE];

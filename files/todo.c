@@ -1,22 +1,21 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "bool.h"
+#include "draw.h"
 #include "todo.h"
 
 void draw_todos(Todo* todo ,char* filename , int size , char* color , int pos){
 	int y = 16;
-	//move_cursor(15,y);
-	//printf("\033[1mFile : %s\033[0m");
-	//y++;
 	move_cursor(5,y);
 	printf("\033[1m+ TODO:\033[0m");
 	move_cursor(120,y);
-	printf("\033[1m+ File: %s\033[0m");
+	printf("\033[1m+ File: %s\033[0m" , filename);
 	y++;
 	move_cursor(5,y);
 	draw_line("-" , strlen("todo: ") + 1);
 	move_cursor(120,y);
-	draw_line("-" , strlen("todo: ") + 1);
+	draw_line("-" , strlen("todo: ") + 3 + strlen(filename));
 	y++;
 	if(todo == NULL){
 		move_cursor(7,y + 1);

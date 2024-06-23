@@ -16,56 +16,28 @@ bool Is_There_Config(void){
 	}
 	return false;
 }
-FILE* Create_Config_File(void){
+FILE* Create_Config_File(){
 	if(Is_There_Config())	return NULL;
-	return fopen(CONFIG_NAME , "w");
+	return fopen(CONFIG_NAME , "wb");
 }
 
-void Add_To_Config(FILE* conf_file , Todo_Files* tf , int cnt){
-	if(!conf_file)	return;
-	for(int i = 0 ; i < cnt ; i++){
-		fprintf(conf_file , "+ %s\n" , tf->filename);
-		for(int j = 0 ; j < tf->count ; j++){
-			fprintf(conf_file , "%s : %s\n" , tf[i].todos[j].done ? "true" : "false" , tf[i].todos[j].str);
-		}
+void Add_To_Config(Todo_Files* tf , int cnt){
+	FILE* conf_file = fopen(CONFIG_NAME , "wb");
+	if(!conf_file){
+		fprintf(stderr , "[ERROR] %s", strerror(errno));
+		return;
 	}
+	fwrite(tf , sizeof(Todo_Files) , cnt , conf_file);
+	fclose(conf_file);
 }
 
-void dec(char* str , int start , int end){
-	if(strlen(str) == 0)	return;
-	int i; 
-	for(i = 0 ; i < strlen(str) ; i++){
-		str[start + i] = str[end + i];
+void Load_File(Todo_Files* tf , int* count_files , int k){
+	(void)k;
+	FILE* fd = fopen(CONFIG_NAME , "rb");
+	if(fd == NULL){
+		fprintf(stderr , "ERROR : %s" , strerror(errno));
+		return;
 	}
-	str[start + i + 1] = '\0';
-}
-
-void Load_File(Todo_Files* tf){
-	FILE* fd;
-	if((fd = fopen(CONFIG_NAME , "r")) == NULL)	return;
-
-	char line[128];
-	int i = -1;
-	int j = 0;
-
-	while(fgets(line , 128 , fd)){
-		if(*line == '+'){
-			i++;
-			dec(line , 0 , 2);
-			strcpy(tf[i].filename,line);
-		}
-		char* subs = strstr(line , "true");
-		if(subs != NULL){
-			strcpy(tf[i].todos[j].str , subs);
-			tf[i].todos[j].done = true;
-			tf[i].todos[j].line_file = i+1;
-			tf[i].todos[j].line_term = 0;
-		}else{
-			strcpy(tf[i].todos[j].str , subs);
-			tf[i].todos[j].done = false;
-			tf[i].todos[j].line_file = i+1;
-			tf[i].todos[j].line_term = 0;
-		}
-		j++;
-	}
+	fread(tf , sizeof(Todo_Files) , *count_files , fd);
+	fclose(fd);
 }
