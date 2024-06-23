@@ -1,7 +1,7 @@
 # Todoc
 
 <p align="center">
-  <img src="img/img.png" />
+  <img src="./img.png" />
 </p>
 
 # you have big project right ?
